@@ -1,4 +1,4 @@
-/* Minimal bare-metal startup for Cortex-A9 (Cyclone V HPS) */
+/* Minimal bare-metal startup for Cortex-A9 (Zynq-7000 PS, Zybo Z7-20) */
     .section .text.start, "ax"
     .global _start
     .type   _start, %function

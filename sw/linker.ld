@@ -1,4 +1,6 @@
-/* Cyclone V HPS — código carregado em DDR3 via U-Boot/JTAG */
+/* Zynq-7000 (Zybo Z7-20) — código carregado em DDR3 via JTAG (XSCT) ou FSBL.
+   DDR: 1 GB @ 0x00000000. ORIGIN deixa os primeiros 16 MB livres
+   (vetores, FSBL, stack do bootloader). */
 ENTRY(_start)
 
 MEMORY {

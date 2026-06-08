@@ -1,7 +1,7 @@
 #include "timer.h"
 
-/* Cortex-A9 Global Timer — PERIPHBASE 0xFFFEC000 + offset 0x200 */
-#define GT_BASE      0xFFFEC200u
+/* Cortex-A9 Global Timer — Zynq-7000 PERIPHBASE 0xF8F00000 + offset 0x200 */
+#define GT_BASE      0xF8F00200u
 #define GT_LO        (*(volatile uint32_t *)(GT_BASE + 0x00u))
 #define GT_HI        (*(volatile uint32_t *)(GT_BASE + 0x04u))
 #define GT_CTRL      (*(volatile uint32_t *)(GT_BASE + 0x08u))

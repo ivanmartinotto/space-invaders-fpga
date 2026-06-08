@@ -1,9 +1,14 @@
 #include "framebuffer.h"
 #include "game.h"
 
+/* Zynq-7000 (Zybo Z7-20, 1 GB DDR @ 0x00000000-0x3FFFFFFF).
+   Os dois framebuffers ficam em DDR; o AXI VDMA na PL faz o readout
+   destes enderecos via porta AXI HP. FRAMEBUFFER_BASE deve coincidir com
+   o(s) endereco(s) configurado(s) no IP VDMA (registers/.tcl do block design).
+   CTRL_REG e um slave AXI-Lite custom mapeado na AXI GP0 (0x4000_0000-0x7FFF_FFFF). */
 #define FRAMEBUFFER_BASE  0x20000000u
 #define FRAMEBUFFER_SIZE  (SCREEN_W * SCREEN_H * 2u)
-#define CTRL_REG_BASE     0xFF200000u
+#define CTRL_REG_BASE     0x40000000u
 #define CTRL_VSYNC_FLAG   0x2u
 #define CTRL_BUF_SELECT   0x1u
 

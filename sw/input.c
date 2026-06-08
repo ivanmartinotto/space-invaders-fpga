@@ -1,12 +1,14 @@
 #include "input.h"
 
-/* PIO core no LW HPS-to-FPGA bridge, configurado no Platform Designer.
-   Ajuste o endereço base se o seu Qsys diferir. */
-#define GPIO_PIO_BASE  0xFF200060u
+/* Xilinx AXI GPIO (PL) na AXI GP0. Endereco default do IP no Vivado;
+   ajuste se o seu Address Editor diferir.
+   Mapa AXI GPIO: +0x00 = GPIO_DATA, +0x04 = GPIO_TRI (tri-state, 1 = entrada). */
+#define GPIO_PIO_BASE  0x41200000u
 #define GPIO_DATA      (*(volatile uint32_t *)(GPIO_PIO_BASE + 0x00u))
-#define GPIO_DIR       (*(volatile uint32_t *)(GPIO_PIO_BASE + 0x04u))
+#define GPIO_TRI       (*(volatile uint32_t *)(GPIO_PIO_BASE + 0x04u))
 
-/* Botões ativos-baixo: KEY0=esq, KEY1=dir, KEY2=fogo, KEY3=pause */
+/* Botoes Zybo Z7 sao ativos-ALTO (pressionado = 1): BTN0=esq, BTN1=dir,
+   BTN2=fogo, BTN3=pause */
 #define BTN_LEFT   (1u << 0)
 #define BTN_RIGHT  (1u << 1)
 #define BTN_FIRE   (1u << 2)
@@ -16,7 +18,7 @@
 static uint32_t prev_raw;
 
 int input_init(void) {
-    GPIO_DIR = 0x0u;            /* todos os pinos como entrada */
+    GPIO_TRI = BTN_MASK;        /* AXI GPIO: 1 = entrada (tri-state) */
     prev_raw = GPIO_DATA & BTN_MASK;
     return 0;                   /* sem file descriptor em bare-metal */
 }
@@ -24,9 +26,9 @@ int input_init(void) {
 void input_poll(int fd, InputState *state) {
     (void)fd;
 
-    uint32_t raw         = GPIO_DATA & BTN_MASK;
-    uint32_t pressed     = (~raw)      & BTN_MASK;  /* 1 = pressionado */
-    uint32_t prev_pressed = (~prev_raw) & BTN_MASK;
+    uint32_t raw          = GPIO_DATA & BTN_MASK;
+    uint32_t pressed      = raw      & BTN_MASK;  /* ativo-alto: 1 = pressionado */
+    uint32_t prev_pressed = prev_raw & BTN_MASK;
     uint32_t just_pressed = pressed & ~prev_pressed; /* borda de subida */
 
     state->left  = (pressed      & BTN_LEFT)  ? 1 : 0;
