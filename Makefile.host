@@ -1,0 +1,37 @@
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99 -O2 -Isw -DSDL_MAIN_HANDLED
+
+# MSYS2/MinGW64 defaults — override with: make -f Makefile.host SDL2_INC=... SDL2_LIB=...
+SDL2_INC ?= /mingw64/include
+SDL2_LIB ?= /mingw64/lib
+
+CFLAGS += -I$(SDL2_INC)
+LIBS    = -L$(SDL2_LIB) -lSDL2 -lm
+
+SRC_GAME = sw/game.c           \
+           sw/player.c         \
+           sw/invaders.c       \
+           sw/ufo.c            \
+           sw/bunker.c         \
+           sw/bullet.c         \
+           sw/collision.c      \
+           sw/renderer.c       \
+           sw/assets/sprites.c \
+           sw/assets/font8x8.c
+
+SRC_HOST = sw/host/framebuffer_sdl.c \
+           sw/host/input_sdl.c       \
+           sw/host/timer_host.c      \
+           sw/main.c
+
+TARGET = space_invaders.exe
+
+all: $(TARGET)
+
+$(TARGET): $(SRC_GAME) $(SRC_HOST)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+clean:
+	rm -f $(TARGET)
+
+.PHONY: all clean

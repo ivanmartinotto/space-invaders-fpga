@@ -67,7 +67,62 @@ space_invaders/
 
 ---
 
-## Compilar (SW)
+## Rodar localmente (PC — sem FPGA)
+
+Para desenvolvimento e testes sem hardware, o jogo roda nativamente via SDL2.
+
+### Pré-requisitos
+
+**Windows — MSYS2/MinGW64:**
+
+1. Instalar [MSYS2](https://www.msys2.org)
+2. Abrir terminal **"MSYS2 MinGW x64"** e instalar dependências:
+
+```sh
+pacman -Syu
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 make
+```
+
+### Build
+
+```sh
+make -f Makefile.host
+```
+
+Gera `space_invaders.exe`.
+
+### Rodar
+
+```sh
+./space_invaders.exe
+```
+
+### Controles (teclado)
+
+| Tecla | Ação |
+|-------|------|
+| `←` / `A` | Mover esquerda |
+| `→` / `D` | Mover direita |
+| `SPACE` | Atirar |
+| `P` | Pausar / Retomar |
+| `R` | Reiniciar (na tela de Game Over) |
+| `Q` / `ESC` | Sair |
+
+### Arquivos host
+
+Os três arquivos em `sw/host/` substituem os módulos de hardware:
+
+| Arquivo host | Substitui | Descrição |
+|---|---|---|
+| `sw/host/framebuffer_sdl.c` | `sw/framebuffer.c` | Janela SDL2 + pixel buffer RGB565 |
+| `sw/host/input_sdl.c` | `sw/input.c` | Teclado via SDL2 |
+| `sw/host/timer_host.c` | `sw/timer.c` | `QueryPerformanceCounter` (Windows) |
+
+Todo o código de lógica de jogo (`game.c`, `renderer.c`, `collision.c`, etc.) é compartilhado entre as duas builds sem modificação.
+
+---
+
+## Compilar (SW — bare-metal FPGA)
 
 ### Pré-requisitos
 

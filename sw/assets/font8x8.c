@@ -1,7 +1,7 @@
 #include "font.h"
 
 /* Standard 8×8 bitmap font (CP437/IBM PC BIOS, public domain).
-   Each character: 8 bytes, each byte = 1 row, bit 7 = leftmost pixel. */
+   Each character: 8 bytes, each byte = 1 row, bit 0 = leftmost pixel. */
 const uint8_t font8x8_basic[128][8] = {
     /* 0x00 */ { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },
     /* 0x01 */ { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },

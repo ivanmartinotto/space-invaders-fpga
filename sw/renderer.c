@@ -19,7 +19,7 @@ void draw_char(int x, int y, char c, uint16_t fg, uint16_t bg) {
     for (int row = 0; row < 8; row++) {
         uint8_t bits = font8x8_basic[idx][row];
         for (int col = 0; col < 8; col++) {
-            uint16_t color = (bits & (0x80u >> (unsigned)col)) ? fg : bg;
+            uint16_t color = (bits & (1u << (unsigned)col)) ? fg : bg;
             if (color != COLOR_BLACK || bg != COLOR_BLACK)
                 put_pixel(x + col, y + row, color);
         }
