@@ -1,13 +1,11 @@
 #include "input.h"
 
-/* Vitis standalone — Xilinx AXI GPIO (PL) na AXI GP0.
-   Ajuste GPIO_PIO_BASE para o Address Editor do Vivado (ou troque por XPAR_*).
+/* Xilinx AXI GPIO (PL) na AXI GP0. Endereco default do IP no Vivado;
+   ajuste se o seu Address Editor diferir.
    Mapa AXI GPIO: +0x00 = GPIO_DATA, +0x04 = GPIO_TRI (tri-state, 1 = entrada). */
-#include "xil_io.h"
-
 #define GPIO_PIO_BASE  0x41200000u
-#define GPIO_DATA_OFF  0x00u
-#define GPIO_TRI_OFF   0x04u
+#define GPIO_DATA      (*(volatile uint32_t *)(GPIO_PIO_BASE + 0x00u))
+#define GPIO_TRI       (*(volatile uint32_t *)(GPIO_PIO_BASE + 0x04u))
 
 /* Botoes Zybo Z7 sao ativos-ALTO (pressionado = 1): BTN0=esq, BTN1=dir,
    BTN2=fogo, BTN3=pause */
@@ -20,15 +18,15 @@
 static uint32_t prev_raw;
 
 int input_init(void) {
-    Xil_Out32(GPIO_PIO_BASE + GPIO_TRI_OFF, BTN_MASK);   /* 1 = entrada */
-    prev_raw = Xil_In32(GPIO_PIO_BASE + GPIO_DATA_OFF) & BTN_MASK;
+    GPIO_TRI = BTN_MASK;        /* AXI GPIO: 1 = entrada (tri-state) */
+    prev_raw = GPIO_DATA & BTN_MASK;
     return 0;                   /* sem file descriptor em bare-metal */
 }
 
 void input_poll(int fd, InputState *state) {
     (void)fd;
 
-    uint32_t raw          = Xil_In32(GPIO_PIO_BASE + GPIO_DATA_OFF) & BTN_MASK;
+    uint32_t raw          = GPIO_DATA & BTN_MASK;
     uint32_t pressed      = raw      & BTN_MASK;  /* ativo-alto: 1 = pressionado */
     uint32_t prev_pressed = prev_raw & BTN_MASK;
     uint32_t just_pressed = pressed & ~prev_pressed; /* borda de subida */

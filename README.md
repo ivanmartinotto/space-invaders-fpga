@@ -10,9 +10,11 @@ Spec completa: [`space_invaders_fpga_spec.md`](space_invaders_fpga_spec.md)
 
 | Placa | FPGA | DDR | CPU | Toolchain HW | Toolchain SW | Saída VGA |
 |-------|------|-----|-----|--------------|--------------|-----------|
-| Digilent Zybo Z7-20 | Xilinx XC7Z020 (Zynq-7000) | 1 GB | Cortex-A9 @ 667 MHz | Vivado | `arm-none-eabi-gcc` | Pmod VGA (RGB444) |
+| Digilent Zybo Z7-20 | Xilinx XC7Z020 (Zynq-7000) | 1 GB | Cortex-A9 @ 667 MHz | Vivado 2025.2 | Vitis 2025.2 (standalone) | Pmod VGA (RGB444) |
 
-> Versão anterior tinha duplo alvo (DE10-Nano / Zynq). Esta versão é **Zynq-only, Vivado-only**.
+> Versão anterior tinha duplo alvo (DE10-Nano / Zynq). Esta versão é **Zynq-only, Vivado/Vitis-only**.
+> A build bare-metal usa a BSP standalone do Vitis (startup + linker gerados pelo Vitis).
+> A antiga build raw `arm-none-eabi-gcc` (crt0/linker próprios) está em `legacy-gcc/`.
 
 ---
 
@@ -28,10 +30,8 @@ space_invaders/
 │   ├── constraints/
 │   │   └── zybo_z7.xdc         ← Pin assignments (Pmod + botões)
 │   └── block_design/           ← ZYNQ7 PS + AXI VDMA + Clocking Wizard
-└── sw/                         ← Código ARM (C99 bare-metal)
-    ├── Makefile
-    ├── crt0.S                  ← Startup bare-metal (Zynq PS)
-    ├── linker.ld               ← Linker script (código em 0x01000000)
+├── legacy-gcc/                 ← Build raw arm-none-eabi-gcc (crt0/linker/Makefile próprios)
+└── sw/                         ← Código ARM (C99 bare-metal, importável no Vitis)
     ├── main.c
     ├── game.h                  ← Todos os tipos e constantes
     ├── game.c / game_api.h     ← Máquina de estados + renderização
@@ -122,54 +122,26 @@ Todo o código de lógica de jogo (`game.c`, `renderer.c`, `collision.c`, etc.) 
 
 ---
 
-## Compilar (SW — bare-metal FPGA)
+## Compilar e rodar na placa (SW — bare-metal via Vitis)
 
-### Pré-requisitos
+Fluxo principal: importar `sw/` numa Application Component standalone do
+**Vitis 2025.2** (BSP gerada a partir do `.xsa` exportado do Vivado).
 
-```bash
-sudo apt install gcc-arm-none-eabi binutils-arm-none-eabi   # toolchain bare-metal
-```
+**Guia completo: [`docs/VITIS.md`](docs/VITIS.md).** Resumo:
 
-Vivado/Vitis instalado para o fluxo de HW e o deploy via XSCT.
+1. Vivado: sintetizar o block design, gerar bitstream, `Export Hardware` (com bitstream) → `.xsa`.
+2. Vitis: `New Platform Component` a partir do `.xsa`, OS = **standalone**, CPU = `ps7_cortexa9_0`.
+3. Vitis: `New Application Component` (Empty C) e importar **só** `sw/*.c|*.h` e `sw/assets/*`.
+   Não importar `sw/host/`, `legacy-gcc/`, `crt0.S`, `linker.ld` nem `Makefile*`.
+4. Build → `Run As → Launch Hardware` (boot JTAG): programa a PL e baixa o `.elf` na DDR.
 
-### Build
+> O Vitis fornece startup (`boot.S`/crt0) e `lscript.ld` pela BSP. `fb_swap()` faz
+> `Xil_DCacheFlushRange()` no buffer antes do swap (DDR é cacheável no standalone).
 
-```bash
-make all
-```
+### Build legacy raw-gcc (opcional, sem Vitis)
 
-Gera `space_invaders.elf`. Para binário puro (FSBL / QSPI):
-
-```bash
-make space_invaders.bin
-```
-
----
-
-## Carregar na placa (bare-metal via JTAG)
-
-Conectar a Zybo Z7-20 via USB (JTAG), modo de boot em JTAG.
-
-```bash
-make deploy
-```
-
-Roda `xsct`: programa o bitstream na PL, baixa o `.elf` na DDR e dá run. Ajustar o caminho do bitstream:
-
-```bash
-make deploy BITSTREAM=hw/space_invaders.bit
-```
-
-Equivalente manual no console XSCT:
-
-```tcl
-connect
-fpga -file hw/space_invaders.bit
-targets -set -filter {name =~ "ARM*#0"}
-rst -processor
-dow space_invaders.elf
-con
-```
+Em `legacy-gcc/` há a build antiga com `arm-none-eabi-gcc` + crt0/linker próprios
+e deploy via XSCT. Mantida por referência; o fluxo suportado agora é o Vitis.
 
 ---
 

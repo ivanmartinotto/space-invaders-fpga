@@ -1,11 +1,20 @@
 #include "framebuffer.h"
 #include "game.h"
 
-/* Zynq-7000 (Zybo Z7-20, 1 GB DDR @ 0x00000000-0x3FFFFFFF).
-   Os dois framebuffers ficam em DDR; o AXI VDMA na PL faz o readout
-   destes enderecos via porta AXI HP. FRAMEBUFFER_BASE deve coincidir com
-   o(s) endereco(s) configurado(s) no IP VDMA (registers/.tcl do block design).
-   CTRL_REG e um slave AXI-Lite custom mapeado na AXI GP0 (0x4000_0000-0x7FFF_FFFF). */
+/* Vitis standalone (bare-metal) — Zynq-7000 / Zybo Z7-20.
+   Os dois framebuffers ficam em DDR (lidos pelo AXI VDMA via porta AXI HP).
+   CTRL_REG e um slave AXI-Lite custom na AXI GP0.
+
+   IMPORTANTE — coerencia de cache:
+   No BSP standalone do Vitis a MMU fica ligada com a DDR CACHEAVEL. As escritas
+   de pixel ficam em L1/L2 e o VDMA, que le a DDR direto, veria dados velhos.
+   Antes de cada swap fazemos Xil_DCacheFlushRange() no buffer recem-desenhado.
+   (Alternativa: marcar a regiao como nao-cacheavel com Xil_SetTlbAttributes.) */
+#include "xil_cache.h"
+#include "xil_io.h"
+
+/* Ajuste estes enderecos para coincidir com o Address Editor do block design.
+   Se voce gerou xparameters.h, pode trocar pelos XPAR_* correspondentes. */
 #define FRAMEBUFFER_BASE  0x20000000u
 #define FRAMEBUFFER_SIZE  (SCREEN_W * SCREEN_H * 2u)
 #define CTRL_REG_BASE     0x40000000u
@@ -16,7 +25,6 @@ static volatile uint16_t * const fb[2] = {
     (volatile uint16_t *)FRAMEBUFFER_BASE,
     (volatile uint16_t *)(FRAMEBUFFER_BASE + FRAMEBUFFER_SIZE),
 };
-static volatile uint32_t * const ctrl_reg = (volatile uint32_t *)CTRL_REG_BASE;
 static int active_fb;
 
 void fb_init(void) {
@@ -28,10 +36,19 @@ void fb_cleanup(void) {
 }
 
 void fb_swap(void) {
-    while (!(*ctrl_reg & CTRL_VSYNC_FLAG));
+    /* Buffer recem-desenhado = back buffer = fb[1 - active_fb].
+       Garante que ele esta na DDR antes do VDMA ler. */
+    Xil_DCacheFlushRange((INTPTR)fb[1 - active_fb], FRAMEBUFFER_SIZE);
+
+    /* Espera o flag de vsync da PL (bit 1) */
+    while (!(Xil_In32(CTRL_REG_BASE) & CTRL_VSYNC_FLAG));
+
     active_fb = 1 - active_fb;
-    *ctrl_reg = (*ctrl_reg & ~CTRL_BUF_SELECT) | (uint32_t)active_fb;
-    *ctrl_reg &= ~CTRL_VSYNC_FLAG;
+
+    uint32_t v = Xil_In32(CTRL_REG_BASE);
+    v = (v & ~CTRL_BUF_SELECT) | (uint32_t)active_fb;  /* seleciona buffer ativo */
+    v &= ~CTRL_VSYNC_FLAG;                              /* limpa o flag de vsync */
+    Xil_Out32(CTRL_REG_BASE, v);
 }
 
 void put_pixel(int x, int y, uint16_t color) {

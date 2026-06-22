@@ -1,10 +1,20 @@
+# Build legacy raw-gcc (sem Vitis/BSP). Rode da raiz do projeto:
+#   make -f legacy-gcc/Makefile
+# A camada de HW (framebuffer/timer/input) vem desta pasta — versoes com MMIO
+# direto, sem dependencia da BSP do Vitis. O Vitis e o fluxo suportado; veja
+# docs/VITIS.md. As demais fontes sao compartilhadas com sw/.
 CC      = arm-none-eabi-gcc
 CFLAGS  = -Wall -Wextra -std=c99 -O2 -march=armv7-a -mfpu=neon -mfloat-abi=hard \
           -Isw -ffreestanding
-LDFLAGS = -T sw/linker.ld -nostartfiles --specs=nosys.specs
+LDFLAGS = -T legacy-gcc/linker.ld -nostartfiles --specs=nosys.specs
 LIBS    = -lm -lc -lgcc
-SRC     = $(wildcard sw/*.c) $(wildcard sw/assets/*.c)
-ASRC    = sw/crt0.S
+
+# Fontes compartilhadas de sw/, exceto a camada de HW (sobrescrita aqui).
+SHARED  = $(filter-out sw/framebuffer.c sw/timer.c sw/input.c, \
+            $(wildcard sw/*.c)) $(wildcard sw/assets/*.c)
+HWLAYER = legacy-gcc/framebuffer.c legacy-gcc/timer.c legacy-gcc/input.c
+SRC     = $(SHARED) $(HWLAYER)
+ASRC    = legacy-gcc/crt0.S
 TARGET  = space_invaders.elf
 # Bitstream do projeto Vivado (programado antes do .elf)
 BITSTREAM ?= hw/space_invaders.bit

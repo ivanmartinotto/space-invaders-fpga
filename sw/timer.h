@@ -1,8 +1,9 @@
 #pragma once
 #include <stdint.h>
 
-/* Usa o Global Timer 64-bit do Cortex-A9 (PERIPHBASE + 0x200).
-   PERIPHCLK = CPU_CLK / 2.  Ajuste CPU_FREQ_HZ se o PLL diferir.
+/* Build Vitis (alvo): timer.c usa XTime_GetTime + COUNTS_PER_SECOND do BSP,
+   entao estas constantes nao sao usadas. Mantidas para a build host (SDL) e
+   para a build legacy raw-gcc (legacy-gcc/), que nao tem o BSP do Vitis.
    Zybo Z7-20: ARM Cortex-A9 @ 667 MHz -> PERIPHCLK = 333.5 MHz. */
 
 #define CPU_FREQ_HZ     667000000UL
