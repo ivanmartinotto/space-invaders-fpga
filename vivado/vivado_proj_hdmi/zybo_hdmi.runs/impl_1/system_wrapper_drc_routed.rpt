@@ -1,0 +1,62 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Mon Jun 29 11:09:01 2026
+| Host         : LAPTOP-3SK89RUD running 64-bit major release  (build 9200)
+| Command      : report_drc -file system_wrapper_drc_routed.rpt -pb system_wrapper_drc_routed.pb -rpx system_wrapper_drc_routed.rpx
+| Design       : system_wrapper
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Fully Routed
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max checks: <unlimited>
+             Checks found: 2
++-----------+----------+-------------------+--------+
+| Rule      | Severity | Description       | Checks |
++-----------+----------+-------------------+--------+
+| RTSTAT-10 | Warning  | No routable loads | 1      |
+| REQP-181  | Advisory | writefirst        | 1      |
++-----------+----------+-------------------+--------+
+
+2. REPORT DETAILS
+-----------------
+RTSTAT-10#1 Warning
+No routable loads  
+32 net(s) have no routable loads. The problem bus(es) and/or net(s) are system_i/ps7_0_axi_periph/inst/m00_nodes/m00_ar_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m00_nodes/m00_aw_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m00_nodes/m00_b_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m00_nodes/m00_r_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m00_nodes/m00_w_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m01_nodes/m01_ar_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m01_nodes/m01_aw_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m01_nodes/m01_b_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m01_nodes/m01_r_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/m01_nodes/m01_w_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/s00_nodes/s00_ar_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/s00_nodes/s00_aw_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/s00_nodes/s00_b_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/s00_nodes/s00_r_node/inst/mi_handler_m_sc_areset_pipe,
+system_i/ps7_0_axi_periph/inst/s00_nodes/s00_w_node/inst/mi_handler_m_sc_areset_pipe
+ (the first 15 of 20 listed nets/buses).
+Related violations: <none>
+
+REQP-181#1 Advisory
+writefirst  
+Synchronous clocking is detected for BRAM (system_i/axi_vdma_0/U0/I_PRMRY_DATAMOVER/GEN_MM2S_FULL.I_MM2S_FULL_WRAPPER/GEN_INCLUDE_MM2S_SF.I_RD_SF/I_DATA_FIFO/BLK_MEM.I_SYNC_FIFOGEN_FIFO/xpm_fifo_base_inst/gen_sdpram.xpm_memory_base_inst/gen_wr_a.gen_word_narrow.mem_reg) in SDP mode with WRITE_FIRST write-mode. This is the preferred mode for best power characteristics, however it may exhibit address collisions if the same address appears on both read and write ports resulting in unknown or corrupted read data. It is suggested to confirm via simulation that an address collision never occurs and if so it is suggested to try and avoid this situation. If address collisions cannot be avoided, the write-mode may be set to READ_FIRST which guarantees that the read data is the prior contents of the memory at the cost of additional power in the design. See the FPGA Memory Resources User Guide for additional information.
+Related violations: <none>
+
+

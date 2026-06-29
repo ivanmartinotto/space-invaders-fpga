@@ -1,0 +1,102 @@
+==============================================================================
+ Zybo Z7-20  -  Projeto HDMI com AXI VDMA (Vivado 2025.2)
+==============================================================================
+
+ARQUIVOS DESTA PASTA
+  build_hdmi.tcl   Script TCL que monta o Block Design automaticamente
+  hdmi.xdc         Constraints dos pinos HDMI TX da Zybo Z7-20
+  LEIAME.txt       Este arquivo
+
+------------------------------------------------------------------------------
+DEPENDENCIAS — clonar nesta mesma pasta antes de rodar o script
+------------------------------------------------------------------------------
+
+  git clone https://github.com/Digilent/vivado-boards
+  git clone https://github.com/Digilent/Zybo-Z7-20-HDMI
+
+Apos os clones, a pasta deve ficar assim:
+
+  zybo_z7_hdmi/
+  |-- build_hdmi.tcl
+  |-- hdmi.xdc
+  |-- LEIAME.txt
+  |-- vivado-boards/          <- repo clonado
+  +-- Zybo-Z7-20-HDMI/       <- repo clonado
+
+------------------------------------------------------------------------------
+PASSO A PASSO
+------------------------------------------------------------------------------
+
+  1. Clone os dois repos acima nesta pasta.
+  2. Abra o Vivado 2025.2.
+  3. No Tcl Console (View -> Tcl Console):
+       cd {<caminho completo desta pasta>}
+       source build_hdmi.tcl
+  4. Aguarde a mensagem "OK! Block design montado com sucesso."
+     (Podem aparecer CRITICAL WARNING sobre DDR DQS skew — sao inofensivos.)
+  5. Clique em "Generate Bitstream" na aba Flow Navigator (pode demorar).
+  6. File -> Export -> Export Hardware  (marque "Include bitstream")
+  7. Abra o .xsa no Vitis 2025.2 (ver docs/VITIS.md para o fluxo do software).
+
+------------------------------------------------------------------------------
+PIPELINE DE VIDEO
+------------------------------------------------------------------------------
+
+  Software (ARM/C)
+    |
+    v  escreve pixels 0x00RRGGBB na DDR (framebuffer)
+  AXI VDMA (MM2S, 2 frame stores — double buffer)
+    |
+    v  stream AXI4S de 32 bits por pixel
+  Subset Converter (32 -> 24 bits, remap R/G/B para a ordem do rgb2dvi)
+    |
+    v  stream de 24 bits
+  AXI4S-to-Video-Out  <-- Video Timing Controller (640x480 @ 60 Hz)
+    |
+    v  barramento de video paralelo (RGB + sync)
+  rgb2dvi  (IP Digilent)
+    |
+    v  sinais TMDS diferenciais
+  Conector HDMI TX da placa
+
+------------------------------------------------------------------------------
+FRAMEBUFFER (uso no software SDK/bare-metal)
+------------------------------------------------------------------------------
+
+  Formato por pixel : 0x00RRGGBB (32 bits, canal A ignorado)
+  Resolucao         : 640 x 480 pixels
+  Tamanho do frame  : 640 * 480 * 4 = 1.228.800 bytes (~1,2 MB)
+  Double buffering  : 2 frames na DDR (configure no driver do VDMA)
+
+  Exemplo minimo em C:
+    #define FB_W    640
+    #define FB_H    480
+    #define RGB(r,g,b) (((u32)(r)<<16)|((u32)(g)<<8)|(u32)(b))
+
+    u32 fb[FB_H][FB_W];          // alocado na DDR
+    fb[y][x] = RGB(255, 0, 0);   // pixel vermelho em (x, y)
+
+------------------------------------------------------------------------------
+PERSONALIZACAO
+------------------------------------------------------------------------------
+
+  Nome do projeto : variavel "proj_name" no topo do build_hdmi.tcl
+  Resolucao       : CONFIG.VIDEO_MODE do v_tc_0  +  CLKOUT1/CLKOUT2 do
+                    clk_wiz (pixel clock e 5x pixel para TMDS)
+                    Exemplos de VIDEO_MODE: {720p}, {1080p}, {800x600p}
+
+------------------------------------------------------------------------------
+AVISOS COMUNS
+------------------------------------------------------------------------------
+
+  CRITICAL WARNING PSU-1..4 (DDR DQS negative skew)
+    => Inofensivos. Vem do preset da placa e nao afetam o funcionamento.
+
+  WARNING: GPIO board automation falhou
+    => Configure o axi_gpio_0 manualmente: IP Customization -> 4 bits, all inputs.
+
+  Wrapper nao encontrado apos make_wrapper
+    => Rode o script novamente ou gere o wrapper manualmente:
+       clique com botao direito no BD "system" -> Create HDL Wrapper.
+
+==============================================================================

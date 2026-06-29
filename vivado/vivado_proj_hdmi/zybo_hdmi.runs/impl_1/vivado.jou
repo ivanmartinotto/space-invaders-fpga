@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Mon Jun 29 11:03:56 2026
+# Process ID         : 18540
+# Current directory  : C:/Users/user/Documents/AAD/space_invaders/vivado/vivado_proj_hdmi/zybo_hdmi.runs/impl_1
+# Command line       : vivado.exe -log system_wrapper.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source system_wrapper.tcl -notrace
+# Log file           : C:/Users/user/Documents/AAD/space_invaders/vivado/vivado_proj_hdmi/zybo_hdmi.runs/impl_1/system_wrapper.vdi
+# Journal file       : C:/Users/user/Documents/AAD/space_invaders/vivado/vivado_proj_hdmi/zybo_hdmi.runs/impl_1\vivado.jou
+# Running On         : LAPTOP-3SK89RUD
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26200
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13620H
+# CPU Frequency      : 2918 MHz
+# CPU Physical cores : 10
+# CPU Logical cores  : 16
+# Host memory        : 16869 MB
+# Swap memory        : 16945 MB
+# Total Virtual      : 33814 MB
+# Available Virtual  : 6751 MB
+#-----------------------------------------------------------
+source system_wrapper.tcl -notrace

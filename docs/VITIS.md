@@ -16,10 +16,15 @@ O `.xsa` precisa conter, no Address Editor / block design:
 
 | Bloco | Endereço esperado pelo SW | Onde ajustar no SW |
 |-------|---------------------------|--------------------|
-| Framebuffer 0 (DDR, lido pelo VDMA) | `0x2000_0000` | `sw/framebuffer.c` |
-| Framebuffer 1 (DDR, lido pelo VDMA) | `0x2009_6000` (`+SCREEN_W*SCREEN_H*2`) | `sw/framebuffer.c` |
-| CTRL_REG (AXI-Lite slave, GP0) | `0x4000_0000` | `sw/framebuffer.c` |
+| Framebuffer 0 (DDR, lido pelo VDMA, **32 bpp**) | `0x2000_0000` | `sw/framebuffer.c` |
+| Framebuffer 1 (DDR, lido pelo VDMA, **32 bpp**) | `0x2012_C000` (`+SCREEN_W*SCREEN_H*4`) | `sw/framebuffer.c` |
+| AXI VDMA (S_AXI_LITE, GP0) | `0x4300_0000` (`XPAR_AXI_VDMA_0_BASEADDR`) | `sw/framebuffer.c` |
 | AXI GPIO botões (GP0) | `0x4120_0000` | `sw/input.c` |
+
+> **Não há CTRL_REG.** O design Vivado (`vivado/build_hdmi.tcl`) usa AXI VDMA +
+> rgb2dvi (HDMI). O framebuffer é **XRGB8888** (`0x00RRGGBB`, 32 bpp) — o jogo
+> continua em RGB565 e a conversão acontece em `put_pixel`/`get_pixel`. O double
+> buffer e o vsync são feitos pelo VDMA em modo *park* (ver notas abaixo).
 
 > Se o seu Address Editor diferir, edite os `#define ...BASE` nesses arquivos
 > (ou troque pelos `XPAR_*` de `xparameters.h`, gerado pela BSP).
@@ -67,7 +72,13 @@ O `.xsa` precisa conter, no Address Editor / block design:
 - **Coerência de cache:** `fb_swap()` faz `Xil_DCacheFlushRange()` no buffer
   recém-desenhado antes do swap, porque a DDR é cacheável no BSP standalone.
   Não remova isso — sem o flush o VDMA lê pixels velhos.
-- **Double buffer + vsync:** `CTRL_REG` bit 0 = buffer ativo (SW escreve),
-  bit 1 = flag de vsync (PL escreve, SW faz poll e limpa).
+- **Double buffer + vsync (AXI VDMA, modo park):** `fb_init()` configura o canal
+  MM2S do VDMA com 2 frame stores e o coloca em modo *park* (não-circular).
+  `fb_swap()` aponta `PARK_PTR_REG[4:0]` para o back buffer e espera o flag de
+  fim-de-frame (`MM2S_VDMASR` bit 12, *write-1-clear*) como vsync. O VDMA precisa
+  ter `c_num_fstores = 2` no block design (já está no `build_hdmi.tcl`).
+- **Pixel 32 bpp:** o framebuffer é `0x00RRGGBB`. Se as cores aparecerem trocadas
+  no monitor, ajuste o `TDATA_REMAP` do `axis_subset_converter_0` no
+  `build_hdmi.tcl` (não mexa na conversão do software).
 - **Timer:** `timer.c` usa `XTime_GetTime`/`COUNTS_PER_SECOND` da BSP, então a
   frequência do PS é pega automaticamente (não depende de `CPU_FREQ_HZ`).
