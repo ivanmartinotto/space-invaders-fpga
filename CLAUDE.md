@@ -12,17 +12,19 @@ Original spec (`space_invaders_fpga_spec.md`) describes a custom VGA design with
 
 ### Software (ARM — bare-metal, Vitis 2025.2)
 
-Primary flow: import `sw/` into a **Vitis standalone Application Component**
-(BSP from the Vivado-exported `.xsa`). The Vitis BSP supplies startup
-(`boot.S`/crt0) and `lscript.ld` — do NOT add custom ones. Full steps: `docs/VITIS.md`.
+The whole game is a **single file**: `sw/space_invaders_all.c`. Import it into a
+**Vitis standalone Application Component** (BSP from the Vivado-exported `.xsa`).
+The Vitis BSP supplies startup (`boot.S`/crt0) and `lscript.ld` — do NOT add
+custom ones. Full steps: `docs/VITIS.md`.
 
-- Import only `sw/*.c|*.h` and `sw/assets/*`. Exclude `sw/host/`, `legacy-gcc/`.
-- HW layer (`framebuffer.c`, `timer.c`, `input.c`) uses BSP headers:
-  `xil_io.h`, `xil_cache.h`, `xtime_l.h`, `sleep.h`.
+- Import only `sw/space_invaders_all.c`. Exclude `legacy-gcc/`.
+- The HW layer uses BSP headers: `xil_io.h`, `xil_cache.h`, `xtime_l.h`,
+  `sleep.h`. Edit the `#define ...BASE` addresses near the top of the
+  framebuffer/VDMA section to match the Vivado Address Editor.
 - `fb_swap()` MUST `Xil_DCacheFlushRange()` the rendered buffer (DDR cacheable).
 
-Host dev build (PC, SDL2, no board): `make -f Makefile.host`.
-Legacy raw `arm-none-eabi-gcc` build (crt0/linker/Makefile): `legacy-gcc/`.
+Legacy raw `arm-none-eabi-gcc` build (crt0/linker/Makefile): `legacy-gcc/`
+(separate, self-contained — not the single-file flow).
 
 ### Hardware (FPGA — Vivado 2025.2, Zybo Z7-20)
 
@@ -70,20 +72,24 @@ input (AXI GPIO btns)     AXI GP0 (VDMA ctrl, GPIO)       → Subset Conv → VT
 
 Defined entirely in `vivado/build_hdmi.tcl`.
 
-### Software Modules (`sw/`)
+### Software (`sw/space_invaders_all.c` — single file)
 
-| File | Role |
-|------|------|
-| `framebuffer.c` | AXI VDMA setup, `put_pixel`, `fb_swap` (park-ptr swap + vsync poll); converts RGB565→XRGB8888 at the write boundary |
-| `renderer.c` | `draw_rect`, `draw_char`, `draw_string`, `draw_sprite`, `clear_screen` |
-| `game.c` | Global `Game` state, `game_update`, `game_render` |
-| `input.c` | AXI GPIO (bare-metal); SDL on host build |
-| `assets/sprites.c` | RGB565 sprite arrays |
-| `assets/font8x8.c` | 8×8 bitmap font (CP437) |
+Everything lives in one C file, in this order (search for the `/* ===== … */`
+banners):
+
+| Section | Role |
+|---------|------|
+| includes + types/macros | `Game` state structs, screen/gameplay `#define`s, RGB565 color macros |
+| framebuffer / VDMA | AXI VDMA setup, `put_pixel`, `fb_swap` (park-ptr swap + vsync poll); RGB565→XRGB8888 at the write boundary. **Edit the `…BASE` addresses here.** |
+| renderer | `draw_rect`, `draw_char`, `draw_string`, `draw_sprite`, `clear_screen` |
+| game logic | player, fleet (invaders), ufo, bunkers, bullets, collisions, `game_update`/`game_render` |
+| input / timer | AXI GPIO buttons; Cortex-A9 global timer |
+| assets | RGB565 sprite arrays + 8×8 CP437 font |
+| `main` | fixed-60-FPS loop |
 
 ### Pixel Format
 
-**Game/renderer/sprites use RGB565 (`uint16_t`)** everywhere — `((r>>3)<<11)|((g>>2)<<5)|(b>>3)`. The DDR **framebuffer is XRGB8888 (32 bpp, `0x00RRGGBB`)** because that's what the VDMA pipeline reads. `framebuffer.c` converts RGB565↔XRGB8888 in `put_pixel`/`get_pixel`, so game code stays 16-bit. FB layout: row-major, `offset = (y*640 + x) * 4` bytes.
+**Game/renderer/sprites use RGB565 (`uint16_t`)** everywhere — `((r>>3)<<11)|((g>>2)<<5)|(b>>3)`. The DDR **framebuffer is XRGB8888 (32 bpp, `0x00RRGGBB`)** because that's what the VDMA pipeline reads. `put_pixel`/`get_pixel` convert RGB565↔XRGB8888, so game code stays 16-bit. FB layout: row-major, `offset = (y*640 + x) * 4` bytes.
 
 ### Game Loop
 
@@ -100,6 +106,6 @@ Fixed 60 FPS delta (`1/60 s`). Sequence per frame: `input_poll → game_update �
 
 1. Build PL with `vivado/build_hdmi.tcl` → bitstream → `.xsa`. Sanity-check HDMI with a solid-color DDR fill.
 2. Vitis: standalone platform (BSP) from `.xsa` + application (`docs/VITIS.md`).
-3. Develop `framebuffer.c`/`renderer.c` logic on host PC first (SDL, `Makefile.host`).
-4. Game logic stays decoupled from HW (RGB565, no board dependency).
+3. Edit `sw/space_invaders_all.c` directly (single file). Game logic is HW-agnostic (RGB565).
+4. Keep the `…BASE` addresses in sync with the Vivado Address Editor / `xparameters.h`.
 5. On board: verify VDMA park-mode double-buffer swap, input latency ≤ 2 frames. If colors look wrong, fix `axis_subset_converter` `TDATA_REMAP` in the TCL (not the SW).

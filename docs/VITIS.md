@@ -14,12 +14,14 @@ ser importados aqui (causariam `_start` duplicado e conflito de linker).
 
 O `.xsa` precisa conter, no Address Editor / block design:
 
-| Bloco | Endereço esperado pelo SW | Onde ajustar no SW |
-|-------|---------------------------|--------------------|
-| Framebuffer 0 (DDR, lido pelo VDMA, **32 bpp**) | `0x2000_0000` | `sw/framebuffer.c` |
-| Framebuffer 1 (DDR, lido pelo VDMA, **32 bpp**) | `0x2012_C000` (`+SCREEN_W*SCREEN_H*4`) | `sw/framebuffer.c` |
-| AXI VDMA (S_AXI_LITE, GP0) | `0x4300_0000` (`XPAR_AXI_VDMA_0_BASEADDR`) | `sw/framebuffer.c` |
-| AXI GPIO botões (GP0) | `0x4120_0000` | `sw/input.c` |
+Todos os `#define …BASE` ficam em `sw/space_invaders_all.c`:
+
+| Bloco | Endereço esperado pelo SW | `#define` |
+|-------|---------------------------|-----------|
+| Framebuffer 0 (DDR, lido pelo VDMA, **32 bpp**) | `0x2000_0000` | `FRAMEBUFFER_BASE` |
+| Framebuffer 1 (DDR, lido pelo VDMA, **32 bpp**) | `0x2012_C000` (`+SCREEN_W*SCREEN_H*4`) | (derivado) |
+| AXI VDMA (S_AXI_LITE, GP0) | `0x4300_0000` (`XPAR_AXI_VDMA_0_BASEADDR`) | `VDMA_BASE` |
+| AXI GPIO botões (GP0) | `0x4120_0000` | `GPIO_PIO_BASE` |
 
 > **Não há CTRL_REG.** O design Vivado (`vivado/build_hdmi.tcl`) usa AXI VDMA +
 > rgb2dvi (HDMI). O framebuffer é **XRGB8888** (`0x00RRGGBB`, 32 bpp) — o jogo
@@ -42,14 +44,11 @@ O `.xsa` precisa conter, no Address Editor / block design:
    - `File → New → Application Component`, vinculado ao platform acima.
    - Template: **Empty Application (C)**.
 
-3. **Importar as fontes**
-   - No `src/` da application, importe (Import Sources) **somente**:
-     - `sw/*.c` e `sw/*.h`
-     - `sw/assets/*.c` e `sw/assets/*.h`
-   - **NÃO** importe: `sw/host/`, `legacy-gcc/`, `crt0.S`, `linker.ld`,
-     `Makefile*`. (O Vitis gera startup + `lscript.ld`.)
-   - Em Build Settings adicione o include dir do `src/` (ou de `sw/`) para os
-     headers serem achados (`-Isrc`).
+3. **Importar a fonte**
+   - O jogo é um **único arquivo**: importe `sw/space_invaders_all.c` no `src/`
+     da application. Não precisa de include dir extra.
+   - **NÃO** importe `legacy-gcc/`, `crt0.S`, `linker.ld` — o Vitis gera o
+     startup + `lscript.ld`.
 
 4. **Linker — colocação na DDR**
    - O `lscript.ld` gerado coloca código/heap/stack no início da DDR.
