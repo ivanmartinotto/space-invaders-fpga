@@ -1,4 +1,4 @@
-set_property SRC_FILE_INFO {cfile:C:/Users/user/Documents/AAD/space_invaders/vivado/hdmi.xdc rfile:../../../../hdmi.xdc id:1} [current_design]
+set_property SRC_FILE_INFO {cfile:C:/Users/holy_two/projeto_vivado/space-invaders-fpga/vivado/hdmi.xdc rfile:../../../../hdmi.xdc id:1} [current_design]
 set_property src_info {type:XDC file:1 line:22 export:INPUT save:INPUT read:READ} [current_design]
 set_property -dict { PACKAGE_PIN H16  IOSTANDARD TMDS_33 } [get_ports { hdmi_out_clk_p }];  # hdmi_tx_clk_p
 set_property src_info {type:XDC file:1 line:23 export:INPUT save:INPUT read:READ} [current_design]

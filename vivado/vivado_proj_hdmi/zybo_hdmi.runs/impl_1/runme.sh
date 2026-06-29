@@ -25,7 +25,7 @@ else
 fi
 export LD_LIBRARY_PATH
 
-HD_PWD='C:/Users/user/Documents/AAD/space_invaders/vivado/vivado_proj_hdmi/zybo_hdmi.runs/impl_1'
+HD_PWD='C:/Users/holy_two/projeto_vivado/space-invaders-fpga/vivado/vivado_proj_hdmi/zybo_hdmi.runs/impl_1'
 cd "$HD_PWD"
 
 HD_LOG=runme.log

@@ -1,0 +1,24 @@
+
+*** Running vivado
+    with args -log system_rst_100M_0.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source system_rst_100M_0.tcl
+
+
+
+****** Vivado v2025.2 (64-bit)
+  **** SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+  **** IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+  **** SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+  **** Start of session at: Mon Jun 29 19:33:17 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source system_rst_100M_0.tcl -notrace
+create_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:07 . Memory (MB): peak = 524.105 ; gain = 218.488
+INFO: [IP_Flow 19-234] Refreshing IP repositories
+WARNING: [IP_Flow 19-2248] Failed to load user IP repository 'c:/Users/holy_two/projeto_vivado/space-invaders-fpga/vivado/Zybo-Z7-20-HDMI/repo/vivado-library'; Can't find the specified path.
+If this directory should no longer be in your list of user repositories, go to the IP Settings dialog and remove it.
+INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/AMDDesignTools/2025.2/Vivado/data/ip'.
+WARNING: [IP_Flow 19-4995] The host OS only allows 260 characters in a normal path. The IP cache path is more than 80 characters. If you experience issues with IP caching, please consider changing the IP cache to a location with a shorter path. Alternately consider using the OS subst command to map part of the path to a drive letter. 
+Current IP cache path is c:/Users/holy_two/projeto_vivado/space-invaders-fpga/vivado/vivado_proj_hdmi/zybo_hdmi.cache/ip 
+INFO: [IP_Flow 19-4838] Using cached IP synthesis design for IP system_rst_100M_0, cache-ID = f7c1c48728dd0238.
+INFO: [Common 17-206] Exiting Vivado at Mon Jun 29 19:33:29 2026...

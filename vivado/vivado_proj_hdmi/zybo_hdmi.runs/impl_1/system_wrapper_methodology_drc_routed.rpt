@@ -1,8 +1,8 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
-| Date         : Mon Jun 29 11:09:08 2026
-| Host         : LAPTOP-3SK89RUD running 64-bit major release  (build 9200)
+| Date         : Mon Jun 29 19:35:49 2026
+| Host         : DESKTOP-GJH7SAM running 64-bit major release  (build 9200)
 | Command      : report_methodology -file system_wrapper_methodology_drc_routed.rpt -pb system_wrapper_methodology_drc_routed.pb -rpx system_wrapper_methodology_drc_routed.rpx
 | Design       : system_wrapper
 | Device       : xc7z020clg400-1
@@ -68,7 +68,7 @@ Related violations: <none>
 XDCB-5#1 Warning
 Runtime inefficient way to find pin objects  
 The option '-through : [get_pins -filter {NAME =~ *SyncAsync*/oSyncStages_reg[0]/D} -hier]' of constraint 'set_false_path' uses inefficient query to find pin objects (see constraint position '7' in the Timing Constraint window in Vivado IDE). To reduce runtime, it is recommended to get the pins through the cell objects. Please refer to Using Constraints Guide (Constraints Efficiency). An example of optimal query is: get_pins -filter {REF_PIN_NAME=~yy*} -of_objects [get_cells -hierarchical xx*].
-Current XDC: c:/Users/user/Documents/AAD/space_invaders/vivado/vivado_proj_hdmi/zybo_hdmi.gen/sources_1/bd/system/ip/system_rgb2dvi_0_0/src/rgb2dvi.xdc (Line: 5)
+Current XDC: c:/Users/holy_two/projeto_vivado/space-invaders-fpga/vivado/vivado_proj_hdmi/zybo_hdmi.gen/sources_1/bd/system/ip/system_rgb2dvi_0_0/src/rgb2dvi.xdc (Line: 5)
 Related violations: <none>
 
 
